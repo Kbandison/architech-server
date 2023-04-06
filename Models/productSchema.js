@@ -1,7 +1,14 @@
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid");
 
 const productSchema = new mongoose.Schema({
-  SKU: Number,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    // required: true,
+  },
+  id: { type: String, default: uuidv4 },
+  sku: Number,
   product: String,
   manufacturer: String,
   name: String,
@@ -9,14 +16,11 @@ const productSchema = new mongoose.Schema({
   regularPrice: Number,
   salePrice: Number,
   category: Array,
-  subCategory: String,
-  brand: String,
   color: String,
   height: String,
   width: String,
   depth: String,
   clearance: Boolean,
-  quantity: Number,
   image: String,
   addToCartUrl: String,
   new: Boolean,
@@ -24,7 +28,6 @@ const productSchema = new mongoose.Schema({
   customerReviewCount: Number,
   customerReviewAverage: Number,
   onSale: Boolean,
-  freeShipping: Boolean,
   freeShipping: Boolean,
   shippingCost: Number,
   shippingLevelsOfService: Array,

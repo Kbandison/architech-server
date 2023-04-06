@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
   phoneNumber: String,
   wishlist: { type: Array, default: [] },
   cart: { type: Array, default: [] },
+  orderHistory: { type: Array, default: [] },
   scope: { type: String, enum: ["customer", "employee", "admin"] },
   createdAt: { type: Date, default: Date.now },
   updatedAt: Date,
