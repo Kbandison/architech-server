@@ -2,7 +2,9 @@ var express = require("express");
 var router = express.Router();
 const {
   getProducts,
+  getProduct,
   createProduct,
+  deleteProduct,
   deleteAllProducts,
   getWishlist,
   addToWishlist,
@@ -12,18 +14,30 @@ const {
   removeFromCart,
   getOrderHistory,
   addToOrderHistory,
+  getAllOrders,
+  deleteOrder,
+  deleteAllOrders,
+  getUserOrders,
+  deleteUserOrder,
+  deleteAllUserOrders,
 } = require("../Controllers/productController");
 const { auth } = require("../Middleware/auth");
 
 /*****************MAIN(ADMIN)* PRODUCT ROUTES****************/
-/* GET home page. */
-router.get("/products", getProducts);
+// GET ALL PRODUCTS
+router.get("/", getProducts);
+
+// GET PRODUCT BY SKU
+router.get("/:id", getProduct);
 
 // CREATE NEW PRODUCT
-router.post("/products/create-product", createProduct);
+router.post("/create-product", createProduct);
+
+// DELETE PRODUCT
+router.delete("/delete/:id", deleteProduct);
 
 // DELETE ALL PRODUCTS
-router.delete("/products/delete-all", deleteAllProducts);
+router.delete("/delete-all", deleteAllProducts);
 
 // GET ALL ORDERS
 
@@ -34,27 +48,45 @@ router.delete("/products/delete-all", deleteAllProducts);
 /*****************USER BASED PRODUCT ROUTES******************/
 
 // GET WISHLIST
-router.get("/products/wishlist", auth, getWishlist);
+router.get("/wishlist", auth, getWishlist);
 
 // ADD TO WISHLIST
-router.put("/products/add-wishlist/:id", auth, addToWishlist);
+router.put("/add-wishlist/:id", auth, addToWishlist);
 
 // REMOVE FROM WISHLIST
-router.put("/products/remove-wishlist/:id", auth, removeWishItem);
+router.put("/remove-wishlist/:id", auth, removeWishItem);
 
 // GET CART
-router.get("/products/cart", auth, getCart);
+router.get("/cart", auth, getCart);
 
 // ADD TO CART
-router.put("/products/add-cart/:id", auth, addToCart);
+router.put("/add-cart/:id", auth, addToCart);
 
 // REMOVE FROM CART
-router.put("/products/remove-cart/:id", auth, removeFromCart);
+router.put("/remove-cart/:id", auth, removeFromCart);
 
 // ADD ORDER HISTORY
-router.put("/products/add-history/:id", auth, addToOrderHistory);
+router.put("/add-history/:id", auth, addToOrderHistory);
 
 // GET ORDER HISTORY
-router.get("/products/history", auth, getOrderHistory);
+router.get("/history", auth, getOrderHistory);
+
+// GET ALL ORDERS
+router.get("/orders", getAllOrders);
+
+// DELETE AN ORDER
+router.delete("/orders/:id", deleteOrder);
+
+// DELETE ALL ORDERS
+router.delete("/orders", deleteAllOrders);
+
+// GET USER ORDERS
+router.get("/user-orders", auth, getUserOrders);
+
+// DELETE USER ORDER
+router.delete("/user-orders/:id", auth, deleteUserOrder);
+
+// DELETE ALL USER ORDERS
+router.delete("/user-orders", auth, deleteAllUserOrders);
 
 module.exports = router;

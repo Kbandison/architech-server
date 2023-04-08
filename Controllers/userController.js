@@ -30,11 +30,13 @@ const registerUser = async (req, res) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
+      console.log("User already exists");
       return res.status(400).json({ message: "User already exists" });
     }
 
     if (password !== confirmPassword) {
-      res.status(400).json({ message: "Passwords do not match" });
+      console.log("Passwords do not match");
+      return res.status(400).json({ message: "Passwords do not match" });
     } else {
       const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -66,7 +68,7 @@ const registerUser = async (req, res) => {
       res.status(201).json({ newUser, token: generateToken(newUser._id) });
     }
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };
 

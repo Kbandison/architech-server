@@ -1,5 +1,6 @@
 const Product = require("../Models/productSchema");
 const User = require("../Models/userSchema");
+const Order = require("../Models/ordersSchema");
 
 /*****************MAIN(ADMIN)* PRODUCT ROUTES****************/
 // GET PRODUCTS
@@ -63,6 +64,20 @@ const getProducts = async (req, res) => {
   }
 };
 
+// GET PRODUCT
+const getProduct = async (req, res) => {
+  try {
+    const product = await Product.findOne({ sku: req.params.id });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
+
 // CREATE NEW PRODUCT (MAY NOT BE NEEDED)
 const createProduct = async (req, res) => {
   try {
@@ -115,6 +130,20 @@ const createProduct = async (req, res) => {
   }
 };
 
+// DELETE A PRODUCT
+const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.deleteOne({ sku: req.params.id });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
+
 // DELETE ALL PRODUCTS
 const deleteAllProducts = async (req, res) => {
   try {
@@ -126,10 +155,43 @@ const deleteAllProducts = async (req, res) => {
 };
 
 // GET ALL ORDERS
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find();
+
+    res.json(orders);
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
 
 // DELETE AN ORDER
+const deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.deleteOne({ _id: req.params.id });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json({ message: "Order deleted" });
+
+    res.json(order);
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
 
 // DELETE ALL ORDERS
+const deleteAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.deleteMany();
+
+    res.json({ message: "All orders deleted", orders });
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
 
 /*****************USER BASED PRODUCT ROUTES******************/
 
@@ -356,9 +418,58 @@ const addToOrderHistory = async (req, res) => {
   });
 };
 
+/*********ORDERS**********/
+
+// GET USER ORDERS
+const getUserOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id });
+
+    res.json(orders);
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
+
+// DELETE USER ORDER
+const deleteUserOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: "Not authorized" });
+    } else {
+      await Order.deleteOne(order);
+    }
+
+    res.json({ message: "Order deleted" });
+
+    res.json(order);
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
+
+// DELETE ALL USER ORDERS
+const deleteAllUserOrders = async (req, res) => {
+  try {
+    const orders = await Order.deleteMany({ user: req.user._id });
+
+    res.json({ message: "All orders deleted", orders });
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
+
 module.exports = {
   getProducts,
+  getProduct,
   createProduct,
+  deleteProduct,
   deleteAllProducts,
   getWishlist,
   addToWishlist,
@@ -368,4 +479,10 @@ module.exports = {
   removeFromCart,
   getOrderHistory,
   addToOrderHistory,
+  getAllOrders,
+  deleteOrder,
+  deleteAllOrders,
+  getUserOrders,
+  deleteUserOrder,
+  deleteAllUserOrders,
 };
