@@ -3,9 +3,10 @@ const { v4: uuidv4 } = require("uuid");
 
 const cartSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true },
+  id: { type: String, default: uuidv4 },
   sku: Number,
   image: String,
-  name: String,
+  product: String,
   modelNumber: String,
   quantity: Number,
   price: Number,

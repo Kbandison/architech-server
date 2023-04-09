@@ -1,6 +1,8 @@
 const Product = require("../Models/productSchema");
 const User = require("../Models/userSchema");
 const Order = require("../Models/ordersSchema");
+const Cart = require("../Models/cartSchema");
+const Wish = require("../Models/wishSchema");
 
 /*****************MAIN(ADMIN)* PRODUCT ROUTES****************/
 // GET PRODUCTS
@@ -199,20 +201,21 @@ const deleteAllOrders = async (req, res) => {
 
 // GET WISHLIST
 const getWishlist = async (req, res) => {
-  const user = await User.findById(req.user._id);
+  try {
+    const wishlist = Wish.find({ user: req.user._id });
 
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
+    res.json({ success: true, wishlist });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
-
-  const wishlist = user.wishlist;
-
-  res.status(200).json(wishlist);
 };
 
 // ADD TO WISHLIST
 const addToWishlist = async (req, res) => {
-  const existingProduct = await Product.findOne({ sku: req.params.id });
+  const existingProduct = await Wish.findOne({ sku: req.params.id });
 
   if (!existingProduct) {
     return res.status(400).json({ message: "Product not found" });
@@ -224,22 +227,25 @@ const addToWishlist = async (req, res) => {
     return res.status(400).json({ message: "User not found" });
   }
 
-  let wishlist = user.wishlist;
-
-  if (wishlist.includes(existingProduct._id)) {
+  if (Wish.includes(existingProduct._id)) {
     return res.status(400).json({
       message: "Product already in wishlist",
     });
   }
 
-  // wishlist.push(existingProduct._id);
-
-  await User.findByIdAndUpdate(req.user._id, {
-    wishlist: [...wishlist, existingProduct],
+  const newWish = new Wish({
+    sku: req.body.sku,
+    image: req.body.image,
+    product: req.body.product,
+    modelNumber: req.body.modelNumber,
+    price: req.body.price,
   });
 
-  res.status(200).json({
+  await Wish.create(newWish);
+
+  res.json({
     message: "Product added to wishlist",
+    newWish,
   });
 };
 
@@ -285,15 +291,16 @@ const removeWishItem = async (req, res) => {
 
 // GET CART
 const getCart = async (req, res) => {
-  const user = await User.findById(req.user._id);
+  try {
+    const cart = Cart.find({ user: req.user._id });
 
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
+    res.json({ success: true, cart });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
-
-  const cart = user.cart;
-
-  res.status(200).json(cart);
 };
 
 // ADD TO CART
@@ -369,13 +376,7 @@ const removeFromCart = async (req, res) => {
 
 // GET ORDER HISTORY
 const getOrderHistory = async (req, res) => {
-  const user = await User.findById(req.user._id);
-
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
-  }
-
-  const history = user.orderHistory;
+  const history = Order.find({ user: req.user._id });
 
   res.status(200).json(history);
 };
