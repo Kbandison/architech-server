@@ -317,20 +317,37 @@ const addToCart = async (req, res) => {
     return res.status(400).json({ message: "User not found" });
   }
 
-  let cart = user.cart;
+  // Cart.map((cart) => {
+  //   if (cart.includes(existingProduct._id)) {
+  //     return res.status(400).json({
+  //       message: "Product already in Cart",
+  //     });
+  //   }
+  // });
 
-  if (cart.includes(existingProduct._id)) {
-    return res.status(400).json({
-      message: "Product already in Cart",
-    });
-  }
+  // await User.findByIdAndUpdate(req.user._id, {
+  //   cart: [...cart, existingProduct],
+  // });
 
-  await User.findByIdAndUpdate(req.user._id, {
-    cart: [...cart, existingProduct],
+  const newCart = new Cart({
+    user: req.user._id,
+    sku: existingProduct.sku,
+    image: existingProduct.image,
+    product: existingProduct.product,
+    modelNumber: existingProduct.modelNumber,
+    quantity: existingProduct.quantity,
+    price:
+      existingProduct.regularPrice > existingProduct.salePrice
+        ? existingProduct.salePrice
+        : existingProduct.regularPrice,
   });
+
+  await Cart.create(newCart);
 
   res.status(200).json({
     message: "Product added to Cart",
+    existingProduct,
+    newCart,
   });
 };
 
@@ -441,7 +458,10 @@ const deleteUserOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (order.user.toString() !== req.user._id.toString()) {
+    if (
+      order.user.toString() !== req.user._id.toString() ||
+      req.user.scope !== "admin"
+    ) {
       return res.status(401).json({ message: "Not authorized" });
     } else {
       await Order.deleteOne(order);
