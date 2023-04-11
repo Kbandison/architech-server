@@ -5,7 +5,11 @@ const orderSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true },
   orderNumber: { type: String, default: uuidv4 },
   orderDate: { type: Date, default: Date.now },
-  orderStatus: { type: String, enum: ["pending", "shipped", "delivered"] },
+  orderStatus: {
+    type: String,
+    default: "pending",
+    enum: ["pending", "shipped", "delivered"],
+  },
   orderTotal: Number,
   orderItems: [
     {
@@ -14,8 +18,7 @@ const orderSchema = new mongoose.Schema({
         image: String,
         name: String,
         modelNumber: String,
-        quantity: Number,
-        singlePrice: Number,
+        quantity: { type: Number, default: 1 },
         totalPrice: Number,
       },
     },

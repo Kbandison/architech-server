@@ -1,8 +1,6 @@
 const Product = require("../Models/productSchema");
 const User = require("../Models/userSchema");
 const Order = require("../Models/ordersSchema");
-const Cart = require("../Models/cartSchema");
-const Wish = require("../Models/wishSchema");
 
 /*****************MAIN(ADMIN)* PRODUCT ROUTES****************/
 // GET PRODUCTS
@@ -199,195 +197,7 @@ const deleteAllOrders = async (req, res) => {
 
 /*******WISHLIST******/
 
-// GET WISHLIST
-const getWishlist = async (req, res) => {
-  try {
-    const wishlist = Wish.find({ user: req.user._id });
-
-    res.json({ success: true, wishlist });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// ADD TO WISHLIST
-const addToWishlist = async (req, res) => {
-  const existingProduct = await Wish.findOne({ sku: req.params.id });
-
-  if (!existingProduct) {
-    return res.status(400).json({ message: "Product not found" });
-  }
-
-  const user = await User.findById(req.user._id);
-
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
-  }
-
-  if (Wish.includes(existingProduct._id)) {
-    return res.status(400).json({
-      message: "Product already in wishlist",
-    });
-  }
-
-  const newWish = new Wish({
-    sku: req.body.sku,
-    image: req.body.image,
-    product: req.body.product,
-    modelNumber: req.body.modelNumber,
-    price: req.body.price,
-  });
-
-  await Wish.create(newWish);
-
-  res.json({
-    message: "Product added to wishlist",
-    newWish,
-  });
-};
-
-// REMOVE FROM WISHLIST
-const removeWishItem = async (req, res) => {
-  const existingProduct = await Product.findOne({ sku: req.params.id });
-
-  if (!existingProduct) {
-    return res.status(400).json({ message: "Product not found" });
-  }
-
-  const user = await User.findById(req.user._id);
-
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
-  }
-
-  let wishlist = user.wishlist;
-
-  let filteredWishlist = wishlist.filter(
-    (item) => item.sku !== existingProduct.sku
-  );
-
-  let checked = wishlist.map((item) => item.sku === existingProduct.sku);
-  console.log(checked);
-
-  if (!checked.includes(true)) {
-    return res.status(400).json({
-      message: "Product not in wishlist",
-    });
-  }
-
-  await User.findByIdAndUpdate(req.user._id, {
-    wishlist: filteredWishlist,
-  });
-
-  res.status(200).json({
-    message: "Product removed from wishlist",
-  });
-};
-
 /*********CART**********/
-
-// GET CART
-const getCart = async (req, res) => {
-  try {
-    const cart = Cart.find({ user: req.user._id });
-
-    res.json({ success: true, cart });
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// ADD TO CART
-const addToCart = async (req, res) => {
-  const existingProduct = await Product.findOne({ sku: req.params.id });
-
-  if (!existingProduct) {
-    return res.status(400).json({ message: "Product not found" });
-  }
-
-  const user = await User.findById(req.user._id);
-
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
-  }
-
-  // Cart.map((cart) => {
-  //   if (cart.includes(existingProduct._id)) {
-  //     return res.status(400).json({
-  //       message: "Product already in Cart",
-  //     });
-  //   }
-  // });
-
-  // await User.findByIdAndUpdate(req.user._id, {
-  //   cart: [...cart, existingProduct],
-  // });
-
-  const newCart = new Cart({
-    user: req.user._id,
-    sku: existingProduct.sku,
-    image: existingProduct.image,
-    product: existingProduct.product,
-    modelNumber: existingProduct.modelNumber,
-    quantity: existingProduct.quantity,
-    price:
-      existingProduct.regularPrice > existingProduct.salePrice
-        ? existingProduct.salePrice
-        : existingProduct.regularPrice,
-  });
-
-  await Cart.create(newCart);
-
-  res.status(200).json({
-    message: "Product added to Cart",
-    existingProduct,
-    newCart,
-  });
-};
-
-// ADD TO BEST BUY CART
-
-// REMOVE FROM CART
-const removeFromCart = async (req, res) => {
-  const existingProduct = await Product.findOne({ sku: req.params.id });
-
-  if (!existingProduct) {
-    return res.status(400).json({ message: "Product not found" });
-  }
-
-  const user = await User.findById(req.user._id);
-
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
-  }
-
-  let cart = user.cart;
-
-  let filteredCart = cart.filter((item) => item.sku !== existingProduct.sku);
-
-  let checked = cart.map((item) => item.sku === existingProduct.sku);
-  console.log(checked);
-
-  if (!checked.includes(true)) {
-    return res.status(400).json({
-      message: "Product not in wishlist",
-    });
-  }
-
-  await User.findByIdAndUpdate(req.user._id, {
-    cart: filteredCart,
-  });
-
-  res.status(200).json({
-    message: "Product removed from Cart",
-  });
-};
 
 /*********ORDER HISTORY**********/
 
@@ -438,72 +248,15 @@ const addToOrderHistory = async (req, res) => {
 
 /*********ORDERS**********/
 
-// GET USER ORDERS
-const getUserOrders = async (req, res) => {
-  try {
-    const orders = await Order.find({ user: req.user._id });
-
-    res.json(orders);
-  } catch (err) {
-    res.json({ message: err });
-  }
-};
-
-// DELETE USER ORDER
-const deleteUserOrder = async (req, res) => {
-  try {
-    const order = await Order.findOne({ _id: req.params.id });
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    if (
-      order.user.toString() !== req.user._id.toString() ||
-      req.user.scope !== "admin"
-    ) {
-      return res.status(401).json({ message: "Not authorized" });
-    } else {
-      await Order.deleteOne(order);
-    }
-
-    res.json({ message: "Order deleted" });
-
-    res.json(order);
-  } catch (err) {
-    res.json({ message: err });
-  }
-};
-
-// DELETE ALL USER ORDERS
-const deleteAllUserOrders = async (req, res) => {
-  try {
-    const orders = await Order.deleteMany({ user: req.user._id });
-
-    res.json({ message: "All orders deleted", orders });
-  } catch (err) {
-    res.json({ message: err });
-  }
-};
-
 module.exports = {
   getProducts,
   getProduct,
   createProduct,
   deleteProduct,
   deleteAllProducts,
-  getWishlist,
-  addToWishlist,
-  removeWishItem,
-  getCart,
-  addToCart,
-  removeFromCart,
   getOrderHistory,
   addToOrderHistory,
   getAllOrders,
   deleteOrder,
   deleteAllOrders,
-  getUserOrders,
-  deleteUserOrder,
-  deleteAllUserOrders,
 };

@@ -30,7 +30,7 @@ router.get("/", getProducts);
 // GET PRODUCT BY SKU
 router.get("/:id", getProduct);
 
-// CREATE NEW PRODUCT
+// // CREATE NEW PRODUCT
 router.post("/create-product", createProduct);
 
 // DELETE PRODUCT
@@ -47,29 +47,11 @@ router.delete("/delete-all", deleteAllProducts);
 
 /*****************USER BASED PRODUCT ROUTES******************/
 
-// GET WISHLIST
-router.get("/wishlist", auth, getWishlist);
-
-// ADD TO WISHLIST
-router.put("/add-wishlist/:id", auth, addToWishlist);
-
-// REMOVE FROM WISHLIST
-router.put("/remove-wishlist/:id", auth, removeWishItem);
-
-// GET CART
-router.get("/cart", auth, getCart);
-
-// ADD TO CART
-router.put("/add-cart/:id", auth, addToCart);
-
-// REMOVE FROM CART
-router.put("/remove-cart/:id", auth, removeFromCart);
-
 // ADD ORDER HISTORY
-router.put("/add-history/:id", auth, addToOrderHistory);
+// router.put("/add-history/:id", auth, addToOrderHistory);
 
-// GET ORDER HISTORY
-router.get("/history", auth, getOrderHistory);
+// // GET ORDER HISTORY
+// router.get("/history", auth, getOrderHistory);
 
 // GET ALL ORDERS
 router.get("/orders", getAllOrders);
@@ -79,14 +61,5 @@ router.delete("/orders/:id", deleteOrder);
 
 // DELETE ALL ORDERS
 router.delete("/orders", deleteAllOrders);
-
-// GET USER ORDERS
-router.get("/user-orders", auth, getUserOrders);
-
-// DELETE USER ORDER
-router.delete("/user-orders/:id", auth, deleteUserOrder);
-
-// DELETE ALL USER ORDERS
-router.delete("/user-orders", auth, deleteAllUserOrders);
 
 module.exports = router;
