@@ -24,6 +24,12 @@ const createOrder = async (req, res) => {
 
     const existingOrder = await Order.find({ user: req.user._id });
 
+    let totalPrice = 0;
+
+    cart.map((item) => {
+      return (totalPrice += item.price);
+    });
+
     let orderItems = (item) => {
       return {
         product: {
@@ -41,7 +47,7 @@ const createOrder = async (req, res) => {
       user: req.user._id,
       orderStatus: "pending",
       orderItems: [...cart.map(orderItems)],
-      orderTotal: cart.map((item) => item.price).reduce((a, b) => a + b, 0),
+      orderTotal: totalPrice,
     });
 
     await Order.create(newOrder);

@@ -6,20 +6,9 @@ const {
   createProduct,
   deleteProduct,
   deleteAllProducts,
-  getWishlist,
-  addToWishlist,
-  removeWishItem,
-  getCart,
-  addToCart,
-  removeFromCart,
-  getOrderHistory,
-  addToOrderHistory,
   getAllOrders,
   deleteOrder,
   deleteAllOrders,
-  getUserOrders,
-  deleteUserOrder,
-  deleteAllUserOrders,
 } = require("../Controllers/productController");
 const { auth } = require("../Middleware/auth");
 
@@ -38,20 +27,6 @@ router.delete("/delete/:id", deleteProduct);
 
 // DELETE ALL PRODUCTS
 router.delete("/delete-all", deleteAllProducts);
-
-// GET ALL ORDERS
-
-// DELETE AN ORDER
-
-// DELETE ALL ORDERS
-
-/*****************USER BASED PRODUCT ROUTES******************/
-
-// ADD ORDER HISTORY
-// router.put("/add-history/:id", auth, addToOrderHistory);
-
-// // GET ORDER HISTORY
-// router.get("/history", auth, getOrderHistory);
 
 // GET ALL ORDERS
 router.get("/orders", getAllOrders);

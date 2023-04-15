@@ -4,6 +4,7 @@ const {
   getCart,
   addToCart,
   removeFromCart,
+  clearQuantity,
   clearCart,
 } = require("../Controllers/cartController");
 const { auth } = require("../Middleware/auth");
@@ -16,6 +17,9 @@ router.post("/add-cart/:id", auth, addToCart);
 
 // REMOVE FROM CART
 router.delete("/remove-cart/:id", auth, removeFromCart);
+
+// CLEAR ITEM QUANTITY
+router.delete("/clear-item/:id", auth, clearQuantity);
 
 // CLEAR CART
 router.delete("/clear-cart", auth, clearCart);

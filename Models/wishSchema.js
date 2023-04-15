@@ -7,7 +7,7 @@ const wishSchema = new mongoose.Schema({
   image: String,
   product: String,
   modelNumber: String,
-  price: Number,
+  price: String,
 });
 
 const WishItem = mongoose.model("wishlists", wishSchema);

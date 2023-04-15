@@ -18,12 +18,19 @@ const auth = async (req, res, next) => {
 
       next();
     } catch (error) {
-      res.status(401).json({ message: "Unauthorized!" });
+      res.status(400).json({
+        message: "You are not authorized!",
+        message2: error.message,
+        token,
+        decoded,
+        message3: req.user,
+      });
     }
   }
 
   if (!token) {
     res.status(401).json({ message: "Unauthorized! No token provided!" });
+    console.log("Unauthorized! No token provided!");
   }
 };
 

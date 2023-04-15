@@ -80,7 +80,7 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "User does not exist" });
+      return res.status(404).json({ message: "User does not exist" });
     }
 
     const validatePassword = await bcrypt.compare(password, user.password);
@@ -89,7 +89,11 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Incorrect password" });
     }
 
-    res.status(200).json({ user, token: generateToken(user._id) });
+    res.status(200).json({
+      success: true,
+      user,
+      token: generateToken(user._id),
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

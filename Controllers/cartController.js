@@ -67,6 +67,7 @@ const addToCart = async (req, res) => {
       }
     }
   } catch (error) {
+    console.log(error.message);
     return res.status(400).json({
       success: false,
       message: error.message,
@@ -121,6 +122,27 @@ const removeFromCart = async (req, res) => {
 };
 
 // CLEAR CART
+const clearQuantity = async (req, res) => {
+  try {
+    const existingCart = await Cart.find({ user: req.user._id });
+
+    if (!existingCart) {
+      return res.status(400).json({ message: "Cart is empty" });
+    } else {
+      await Cart.deleteOne({ sku: req.params.id });
+      return res.status(200).json({
+        message: "Item Quantity Cleared",
+      });
+    }
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// CLEAR CART
 const clearCart = async (req, res) => {
   try {
     const existingCart = await Cart.find({ user: req.user._id });
@@ -145,5 +167,6 @@ module.exports = {
   getCart,
   addToCart,
   removeFromCart,
+  clearQuantity,
   clearCart,
 };
