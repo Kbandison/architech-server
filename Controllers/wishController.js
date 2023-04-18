@@ -24,7 +24,11 @@ const addToWishlist = async (req, res) => {
     return res.status(400).json({ message: "Product not found" });
   }
 
-  const existingWish = await Wish.findOne({ sku: req.params.id });
+  const existingWish = await Wish.find({ user: req.user._id });
+
+  const existingWishItem = existingWish.find(
+    (item) => item.sku === existingProduct.sku
+  );
 
   let paidPrice =
     existingProduct.regularPrice > existingProduct.salePrice
@@ -40,14 +44,7 @@ const addToWishlist = async (req, res) => {
     price: paidPrice,
   });
 
-  if (
-    existingWish &&
-    existingWish.user.toString() !== req.user._id.toString()
-  ) {
-    return res.status(401).json({ message: "Not authorized" });
-  }
-
-  if (!existingWish) {
+  if (!existingWishItem) {
     await Wish.create(newWish);
     res.status(200).json({
       message: "Product added to wishlist",

@@ -12,6 +12,15 @@ const getUsers = async (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    const user = await User.find({ id: req.params.id });
+    res.json(user);
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
+
 // CREATE NEW USER
 const registerUser = async (req, res) => {
   const {
@@ -40,13 +49,13 @@ const registerUser = async (req, res) => {
     } else {
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      const scope = email.includes("@acadmin.com")
+      const scope = email.includes("@atadmin.com")
         ? "admin"
         : email.includes("@architech.com")
         ? "employee"
         : "customer";
 
-      const newUser = new User({
+      const user = new User({
         firstName,
         lastName,
         email,
@@ -63,9 +72,9 @@ const registerUser = async (req, res) => {
         scope,
       });
 
-      await User.create(newUser);
+      await User.create(user);
 
-      res.status(201).json({ newUser, token: generateToken(newUser._id) });
+      res.status(201).json({ user, token: generateToken(user._id) });
     }
   } catch (err) {
     return res.status(500).json({ message: err.message });
@@ -93,10 +102,37 @@ const loginUser = async (req, res) => {
       success: true,
       user,
       token: generateToken(user._id),
+      refreshToken: refreshToken(user._id),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+// REFRESH USER LOGIN
+const refreshUser = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Unauthorized, no refresh token" });
+  }
+
+  if (!refreshToken.includes(refreshToken)) {
+    return res.status(403).json({ message: "Forbidden, tokens not included" });
+  }
+
+  jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH, (err, user) => {
+    if (err) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden, tokens do not match" });
+    }
+
+    const accessToken = generateToken({ id: user.id });
+    console.log(user.id);
+
+    res.json({ user, accessToken });
+  });
 };
 
 // UPDATE USER INFO
@@ -195,6 +231,12 @@ const deleteUser = async (req, res) => {
   res.status(200).json({ success: true, message: "User deleted" });
 };
 
+const deleteAllUsers = async (req, res) => {
+  await User.deleteMany();
+
+  res.status(200).json({ success: true, message: "All Users deleted" });
+};
+
 //GENERATE A USER TOKEN
 const generateToken = (id) => {
   const token = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
@@ -202,10 +244,22 @@ const generateToken = (id) => {
   return token;
 };
 
+//GENERATE A REFRESH TOKEN
+const refreshToken = (id) => {
+  const token = jwt.sign({ id }, process.env.JWT_SECRET_REFRESH, {
+    expiresIn: "1h",
+  });
+
+  return token;
+};
+
 module.exports = {
   getUsers,
+  getUser,
   registerUser,
   loginUser,
+  refreshUser,
   updateUser,
   deleteUser,
+  deleteAllUsers,
 };

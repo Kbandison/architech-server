@@ -1,4 +1,3 @@
-const User = require("../Models/userSchema");
 const Cart = require("../Models/cartSchema");
 const Product = require("../Models/productSchema");
 
@@ -25,7 +24,11 @@ const addToCart = async (req, res) => {
       return res.status(400).json({ message: "Product not found" });
     }
 
-    let existingCart = await Cart.findOne({ sku: product.sku });
+    let existingCart = await Cart.find({ user: req.user._id });
+
+    let existingCartItem = existingCart.find(
+      (item) => item.sku === product.sku
+    );
 
     let paidPrice =
       product.regularPrice > product.salePrice
@@ -39,32 +42,27 @@ const addToCart = async (req, res) => {
       product: product.product,
       modelNumber: product.modelNumber,
       quantity: product.quantity,
+      regularPrice: product.regularPrice,
+      salePrice: product.salePrice,
       price: paidPrice,
     });
 
-    if (
-      existingCart &&
-      existingCart.user.toString() !== req.user._id.toString()
-    ) {
-      return res.status(401).json({ message: "Not authorized" });
-    } else {
-      if (!existingCart) {
-        await Cart.create(newCart);
-        res.status(200).json({
-          message: "Product added to Cart",
-        });
-      } else if (existingCart && existingCart.sku === newCart.sku) {
-        await Cart.updateOne(
-          { sku: product.sku },
-          {
-            $inc: {
-              quantity: 1,
-            },
-            price: paidPrice * (existingCart.quantity + 1),
-          }
-        );
-        res.json({ message: "Product quantity updated" });
-      }
+    if (!existingCartItem) {
+      await Cart.create(newCart);
+      res.status(200).json({
+        message: "Product added to Cart",
+      });
+    } else if (existingCartItem && existingCartItem.sku === newCart.sku) {
+      await Cart.updateOne(
+        { user: req.user._id, sku: product.sku },
+        {
+          $inc: {
+            quantity: 1,
+          },
+          price: paidPrice * (existingCartItem.quantity + 1),
+        }
+      );
+      res.json({ message: "Product quantity updated" });
     }
   } catch (error) {
     console.log(error.message);

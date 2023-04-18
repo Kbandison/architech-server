@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   getUserOrders,
+  getAllOrders,
   createOrder,
   deleteUserOrder,
   deleteAllUserOrders,
@@ -10,6 +11,9 @@ const { auth } = require("../Middleware/auth");
 
 // GET USER ORDERS
 router.get("/", auth, getUserOrders);
+
+// GET ALL ORDERS
+router.get("/all-orders", getAllOrders);
 
 // ADD ORDERS
 router.post("/add-order", auth, createOrder);
