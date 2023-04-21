@@ -24,6 +24,17 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+// GET USER ORDERS
+const getOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.params.id });
+
+    res.json({ success: true, orders });
+  } catch (err) {
+    res.json({ message: err });
+  }
+};
+
 // CREATE ORDER
 const createOrder = async (req, res) => {
   try {
@@ -62,12 +73,18 @@ const createOrder = async (req, res) => {
       }
     });
 
-    console.log(orderSavings);
-
     const newOrder = new Order({
       user: req.user._id,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
+      email: req.user.email,
+      address: {
+        street: req.user.address.street,
+        city: req.user.address.city,
+        state: req.user.address.state,
+        zip: req.user.address.zip,
+      },
+      phoneNumber: req.user.phoneNumber,
       orderStatus: "pending",
       orderItems: [...cart.map(orderItems)],
       orderTotal: totalPrice,
@@ -86,21 +103,27 @@ const createOrder = async (req, res) => {
 
 // UPDATE ORDER STATUS
 const updateOrderStatus = async (req, res) => {
-  const existingOrder = await Order.findOne({ orderNumber: req.params.id });
+  try {
+    const existingOrder = await Order.findOne({ orderNumber: req.params.id });
 
-  if (!existingOrder) {
-    return res.status(404).json({ message: "Order not found" });
-  }
+    if (!existingOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
 
-  if (req.user.scope !== "admin") {
-    return res.status(401).json({ message: "Not authorized" });
-  } else {
-    const updatedOrder = await Order.updateOne(existingOrder, {
-      ...Order,
-      orderStatus: req.body.orderStatus,
-    });
+    if (req.user.scope !== "admin") {
+      return res.status(400).json({ message: "Not authorized" });
+    } else {
+      const updatedOrder = await Order.updateOne(
+        { orderNumber: existingOrder.orderNumber },
+        {
+          orderStatus: req.body.orderStatus,
+        }
+      );
 
-    res.json({ message: "Order updated", updatedOrder });
+      res.json({ message: "Order updated", updatedOrder });
+    }
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -117,7 +140,7 @@ const deleteUserOrder = async (req, res) => {
       order.user.toString() !== req.user._id.toString() ||
       req.user.scope !== "admin"
     ) {
-      return res.status(401).json({ message: "Not authorized" });
+      return res.status(400).json({ message: "Not authorized" });
     } else {
       await Order.deleteOne(order);
       res.json({ message: "Order deleted", order });
@@ -135,7 +158,7 @@ const deleteAllUserOrders = async (req, res) => {
     if (req.user.scope !== "admin") {
       orders = await Order.deleteMany({ user: req.user._id });
     } else {
-      return res.status(401).json({ message: "Not authorized" });
+      return res.status(400).json({ message: "Not authorized" });
     }
 
     res.json({ message: "All orders deleted", orders });
@@ -147,6 +170,7 @@ const deleteAllUserOrders = async (req, res) => {
 module.exports = {
   getUserOrders,
   getAllOrders,
+  getOrders,
   createOrder,
   updateOrderStatus,
   deleteUserOrder,

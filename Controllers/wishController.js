@@ -62,16 +62,16 @@ const removeWishItem = async (req, res) => {
     return res.status(400).json({ message: "Product not found" });
   }
 
-  const existingWish = await Wish.findOne({ sku: req.params.id });
+  const existingWish = await Wish.find({ user: req.user._id });
 
-  if (!existingWish) {
+  const existingWishItem = existingWish.find(
+    (item) => item.sku === existingProduct.sku
+  );
+
+  if (!existingWishItem) {
     return res.status(400).json({ message: "Product not in wishlist" });
-  }
-
-  if (existingWish.user.toString() !== req.user._id.toString()) {
-    return res.status(401).json({ message: "Not authorized" });
   } else {
-    await Wish.deleteOne({ sku: req.params.id });
+    await Wish.deleteOne({ user: req.user._id, sku: req.params.id });
   }
 
   res.status(200).json({

@@ -14,7 +14,7 @@ const {
 /* GET users listing. */
 router.get("/", getUsers);
 
-router.get("/:id", getUser);
+router.get("/user/:id", getUser);
 
 router.post("/register", registerUser);
 

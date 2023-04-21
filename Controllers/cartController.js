@@ -41,7 +41,7 @@ const addToCart = async (req, res) => {
       image: product.image,
       product: product.product,
       modelNumber: product.modelNumber,
-      quantity: product.quantity,
+      quantity: 1,
       regularPrice: product.regularPrice,
       salePrice: product.salePrice,
       price: paidPrice,
@@ -49,23 +49,29 @@ const addToCart = async (req, res) => {
 
     if (!existingCartItem) {
       await Cart.create(newCart);
+      if (Cart.quantity === NaN) {
+        await Cart.deleteOne(newCart);
+      }
       res.status(200).json({
         message: "Product added to Cart",
       });
-    } else if (existingCartItem && existingCartItem.sku === newCart.sku) {
-      await Cart.updateOne(
-        { user: req.user._id, sku: product.sku },
-        {
-          $inc: {
-            quantity: 1,
-          },
-          price: paidPrice * (existingCartItem.quantity + 1),
-        }
-      );
-      res.json({ message: "Product quantity updated" });
+    } else {
+      if (existingCartItem && existingCartItem.sku === newCart.sku) {
+        await Cart.updateOne(
+          { user: req.user._id, sku: product.sku },
+          {
+            $inc: {
+              quantity: 1,
+            },
+            price: paidPrice * (existingCartItem.quantity + 1),
+          }
+        );
+        res.json({
+          message: "Product quantity updated",
+        });
+      }
     }
   } catch (error) {
-    console.log(error.message);
     return res.status(400).json({
       success: false,
       message: error.message,
@@ -77,39 +83,41 @@ const addToCart = async (req, res) => {
 const removeFromCart = async (req, res) => {
   try {
     const existingProduct = await Product.findOne({ sku: req.params.id });
+
     if (!existingProduct) {
       return res.status(400).json({ message: "Product not found" });
     }
 
-    const existingCart = await Cart.findOne({ sku: req.params.id });
+    let existingCart = await Cart.find({ user: req.user._id });
 
-    if (existingCart.user.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: "Not authorized" });
+    let existingCartItem = existingCart.find(
+      (item) => item.sku === existingProduct.sku
+    );
+
+    if (!existingCartItem) {
+      return res.status(400).json({ message: "Product not in cart" });
     } else {
-      if (!existingCart) {
-        return res.status(400).json({ message: "Product not in cart" });
-      } else {
-        if (existingCart.quantity > 1) {
-          await Cart.updateOne(
-            { sku: req.params.id },
-            {
-              $inc: {
-                quantity: -1,
-              },
-              price:
-                existingCart.price - existingCart.price / existingCart.quantity,
-            }
-          );
-          return res.json({ message: "Product quantity updated" });
-        }
+      if (existingCartItem.quantity > 1) {
+        await Cart.updateOne(
+          { user: req.user._id, sku: req.params.id },
+          {
+            $inc: {
+              quantity: -1,
+            },
+            price:
+              existingCartItem.price -
+              existingCartItem.price / existingCartItem.quantity,
+          }
+        );
+        return res.json({ message: "Product quantity updated" });
       }
+    }
 
-      if (existingCart.quantity === 1) {
-        await Cart.deleteOne({ sku: req.params.id });
-        return res.status(200).json({
-          message: "Product removed from Cart",
-        });
-      }
+    if (existingCartItem.quantity === 1) {
+      await Cart.deleteOne({ user: req.user._id, sku: req.params.id });
+      return res.status(200).json({
+        message: "Product removed from Cart",
+      });
     }
   } catch (error) {
     return res.status(400).json({

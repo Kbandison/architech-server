@@ -1,6 +1,9 @@
 const User = require("../Models/userSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Wish = require("../Models/wishSchema");
+const Cart = require("../Models/cartSchema");
+const Order = require("../Models/ordersSchema");
 
 // GET USERS
 const getUsers = async (req, res) => {
@@ -14,7 +17,7 @@ const getUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const user = await User.find({ id: req.params.id });
+    const user = await User.findOne({ _id: req.params.id });
     res.json(user);
   } catch (err) {
     res.json({ message: err });
@@ -39,12 +42,10 @@ const registerUser = async (req, res) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      console.log("User already exists");
       return res.status(400).json({ message: "User already exists" });
     }
 
     if (password !== confirmPassword) {
-      console.log("Passwords do not match");
       return res.status(400).json({ message: "Passwords do not match" });
     } else {
       const hashedPassword = await bcrypt.hash(password, 12);
@@ -129,7 +130,6 @@ const refreshUser = async (req, res) => {
     }
 
     const accessToken = generateToken({ id: user.id });
-    console.log(user.id);
 
     res.json({ user, accessToken });
   });
@@ -224,15 +224,21 @@ const updateUser = async (req, res) => {
 
 // DELETE USER
 const deleteUser = async (req, res) => {
-  const user = await User.findOne({ id: req.params.id });
+  const user = await User.findOne({ _id: req.params.id });
 
   await User.deleteOne(user);
+  await Order.deleteMany({ user: user._id });
+  await Cart.deleteMany({ user: user._id });
+  await Wish.deleteMany({ user: user._id });
 
   res.status(200).json({ success: true, message: "User deleted" });
 };
 
 const deleteAllUsers = async (req, res) => {
   await User.deleteMany();
+  await Order.deleteMany();
+  await Cart.deleteMany();
+  await Wish.deleteMany();
 
   res.status(200).json({ success: true, message: "All Users deleted" });
 };

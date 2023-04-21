@@ -15,21 +15,20 @@ const auth = async (req, res, next) => {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       req.user = await User.findById(decoded.id).select("-password");
+
       next();
     } catch (error) {
-      res.status(400).json({
-        message: "You are not authorized!",
-        message2: error.message,
-        token,
-        decoded,
+      res.status(401).json({
+        message: "Token has expired!",
+        message2: `Message: ${error.message}`,
         message3: req.user,
+        message4: (res.json = error.message),
       });
     }
   }
 
   if (!token) {
     res.status(401).json({ message: "Unauthorized! No token provided!" });
-    console.log("Unauthorized! No token provided!");
   }
 };
 
