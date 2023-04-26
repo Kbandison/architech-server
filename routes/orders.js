@@ -24,7 +24,7 @@ router.get("/user-orders/:id", getOrders);
 router.post("/add-order", auth, createOrder);
 
 // UPDATE ORDER STATUS
-router.put("/update-status/:id", auth, updateOrderStatus);
+router.put("/update-status/:id", updateOrderStatus);
 
 // DELETE USER ORDER
 router.delete("/remove-order/:id", auth, deleteUserOrder);

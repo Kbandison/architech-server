@@ -110,18 +110,14 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (req.user.scope !== "admin") {
-      return res.status(400).json({ message: "Not authorized" });
-    } else {
-      const updatedOrder = await Order.updateOne(
-        { orderNumber: existingOrder.orderNumber },
-        {
-          orderStatus: req.body.orderStatus,
-        }
-      );
+    const updatedOrder = await Order.updateOne(
+      { orderNumber: existingOrder.orderNumber },
+      {
+        orderStatus: req.body.orderStatus,
+      }
+    );
 
-      res.json({ message: "Order updated", updatedOrder });
-    }
+    res.json({ message: "Order updated", updatedOrder });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

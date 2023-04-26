@@ -13,6 +13,7 @@ const usersRouter = require("./routes/users");
 const wishRouter = require("./routes/wishlist");
 const cartRouter = require("./routes/cart");
 const ordersRouter = require("./routes/orders");
+const historyRouter = require("./routes/history");
 
 const { mongooseConnect } = require("./Database/db.js");
 mongooseConnect();
@@ -37,6 +38,7 @@ app.use("/users", usersRouter);
 app.use("/wishlist", wishRouter);
 app.use("/cart", cartRouter);
 app.use("/orders", ordersRouter);
+app.use("/history", historyRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

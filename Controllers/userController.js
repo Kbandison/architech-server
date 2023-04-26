@@ -141,84 +141,45 @@ const updateUser = async (req, res) => {
 
   !user && res.status(404).send("No user found");
 
-  let hashedPassword;
+  const {
+    firstName = user.firstName,
+    lastName = user.lastName,
+    email = user.email,
+    password,
+    address = user.address,
+    phoneNumber = user.phoneNumber,
+  } = req.body;
 
-  if (req.body.password) {
-    hashedPassword = await bcrypt.hash(req.body.password, 10);
+  const updateObj = {
+    firstName,
+    lastName,
+    email,
+    address: {
+      ...user.address,
+      ...address,
+    },
+    phoneNumber,
+    updatedAt: new Date(),
+  };
+
+  if (password !== undefined) {
+    updateObj.password = await bcrypt.hash(password, 10);
   }
 
-  const updatedUser = {};
-
-  req.body.firstName === undefined
-    ? (updatedUser.firstName = user.firstName)
-    : (updatedUser.firstName = req.body.firstName);
-  req.body.lastName === undefined
-    ? (updatedUser.lastName = user.lastName)
-    : (updatedUser.lastName = req.body.lastName);
-  req.body.email === undefined
-    ? (updatedUser.email = user.email)
-    : (updatedUser.email = req.body.email);
-
-  req.body.password === undefined
-    ? (updatedUser.password = user.password)
-    : (updatedUser.password = hashedPassword);
-
-  if (req.body.password !== req.body.confirmPassword) {
-    res.status(400).json({ message: "Passwords do not match" });
+  if (email !== undefined) {
+    const scope = email.includes("@atadmin.com")
+      ? "admin"
+      : email.includes("@architech.com")
+      ? "employee"
+      : "customer";
+    updateObj.scope = scope;
   }
 
-  if (req.body.address === undefined) {
-    updatedUser.address = user.address;
-  } else {
-    updatedUser.address = {
-      street:
-        req.body.address.street === undefined
-          ? user.address.street
-          : req.body.address.street,
-      city:
-        req.body.address.city === undefined
-          ? user.address.city
-          : req.body.address.city,
-      state:
-        req.body.address.state === undefined
-          ? user.address.state
-          : req.body.address.state,
-      zip:
-        req.body.address.zip === undefined
-          ? user.address.zip
-          : req.body.address.zip,
-    };
-  }
-
-  req.body.phoneNumber === undefined
-    ? (updatedUser.phoneNumber = user.phoneNumber)
-    : (updatedUser.phoneNumber = req.body.phoneNumber);
-  req.body.wishlist === undefined
-    ? (updatedUser.wishlist = user.wishlist)
-    : (updatedUser.wishlist = req.body.wishlist);
-  req.body.cart === undefined
-    ? (updatedUser.cart = user.cart)
-    : (updatedUser.cart = req.body.cart);
-
-  const scope = req.body.email.includes("@acadmin.com")
-    ? "admin"
-    : req.body.email.includes("@architech.com")
-    ? "employee"
-    : "customer";
-
-  req.body.email === undefined
-    ? (updatedUser.scope = user.scope)
-    : (updatedUser.scope = scope);
-
-  updatedUser.id = user.id;
-  updatedUser.createdAt = user.createdAt;
-  updatedUser.updatedAt = new Date();
-
-  await User.updateOne(user, updatedUser);
+  await User.updateOne({ id: req.params.id }, { $set: updateObj });
 
   res.json({
     success: true,
-    updatedUser: updatedUser,
+    updatedUser: updateObj,
   });
 };
 
