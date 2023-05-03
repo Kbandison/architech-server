@@ -35,13 +35,15 @@ const addToWishlist = async (req, res) => {
       ? existingProduct.salePrice
       : existingProduct.regularPrice;
 
+  let employeePrice = existingProduct.regularPrice * 0.65;
+
   const newWish = new Wish({
     user: req.user._id,
     sku: existingProduct.sku,
     image: existingProduct.image,
     product: existingProduct.product,
     modelNumber: existingProduct.modelNumber,
-    price: paidPrice,
+    price: req.user.scope !== "customer" ? employeePrice : paidPrice,
   });
 
   if (!existingWishItem) {

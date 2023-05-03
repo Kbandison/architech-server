@@ -35,6 +35,8 @@ const addToCart = async (req, res) => {
         ? product.salePrice
         : product.regularPrice;
 
+    let employeePrice = product.regularPrice * 0.65;
+
     const newCart = new Cart({
       user: req.user._id,
       sku: product.sku,
@@ -44,7 +46,7 @@ const addToCart = async (req, res) => {
       quantity: 1,
       regularPrice: product.regularPrice,
       salePrice: product.salePrice,
-      price: paidPrice,
+      price: req.user.scope !== "customer" ? employeePrice : paidPrice,
     });
 
     if (!existingCartItem) {

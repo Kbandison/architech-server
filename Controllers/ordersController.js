@@ -132,15 +132,8 @@ const deleteUserOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (
-      order.user.toString() !== req.user._id.toString() ||
-      req.user.scope !== "admin"
-    ) {
-      return res.status(400).json({ message: "Not authorized" });
-    } else {
-      await Order.deleteOne(order);
-      res.json({ message: "Order deleted", order });
-    }
+    await Order.deleteOne(order);
+    res.json({ message: "Order deleted", order });
   } catch (err) {
     res.json({ message: err });
   }

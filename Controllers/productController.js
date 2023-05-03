@@ -8,6 +8,7 @@ const getProducts = async (req, res) => {
   try {
     const url =
       "https://api.bestbuy.com/v1/products((categoryPath.id=abcat0101000))?apiKey=wqeLbseHZors9FmRbSXM6Ugv&pageSize=50&format=json";
+
     const response = await fetch(url);
     const data = await response.json();
     const products = data.products;
